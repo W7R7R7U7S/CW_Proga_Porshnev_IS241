@@ -3,7 +3,7 @@
 #include "sort_lib.h"
 int main() {
     // Загрузка библиотеки
-    void* lib = dlopen("./libsort.so", RTLD_LAZY);
+    void* lib = dlopen("./libfsdyn.so", RTLD_LAZY);
     if (!lib) {
         printf("Ошибка загрузки библиотеки: %s\n", dlerror());
         return 1;    }
