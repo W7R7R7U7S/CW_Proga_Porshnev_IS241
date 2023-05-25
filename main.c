@@ -5,9 +5,10 @@
 #include <sys/time.h>
 #include "sort_lib.h"
 
-#define SIZE_1 28
-#define SIZE_2 216
-#define STEP 4
+#define SIZE_1 256
+#define SIZE_2 33024
+#define STEP 1024
+
 
 double wtime()
 {
@@ -46,7 +47,7 @@ int main() {
     for (int i = SIZE_1; i <= SIZE_2; i += STEP) {
         int* arr = (int*)malloc(i * sizeof(int));
 
-        if (i == 216){i = 215;}
+        if (i == 33024){i = 32768;}
         printf("%d\t", i);
         for (int j = 0; j < i; j++) {
             arr[j] = getrand(28, 215);
