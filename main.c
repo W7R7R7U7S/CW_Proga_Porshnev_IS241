@@ -23,25 +23,28 @@ int getrand(int min, int max)
 
 void printArray(int arr[], int size)
 {
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++)
+    {
         printf("%d ", arr[i]);
     }
     printf("\n");
 }
 
-void sortFromFile(const char* filename, void (*sort_func)(int[], int, int), int size)
+void sortFromFile(const char *filename, void (*sort_func)(int[], int, int), int size)
 {
-    FILE* file = fopen(filename, "r");
-    if (file == NULL) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
         printf("Ошибка открытия файла.\n");
         return;
     }
 
-    int* arr = (int*)malloc(size * sizeof(int));
+    int *arr = (int *)malloc(size * sizeof(int));
 
     int i = 0;
     int num;
-    while (fscanf(file, "%d", &num) == 1 && i < size) {
+    while (fscanf(file, "%d", &num) == 1 && i < size)
+    {
         arr[i++] = num;
     }
     fclose(file);
@@ -57,8 +60,9 @@ void sortFromFile(const char* filename, void (*sort_func)(int[], int, int), int 
 int main()
 {
     // Загрузка библиотеки
-    void* lib = dlopen("./libfsdyn.so", RTLD_LAZY);
-    if (!lib) {
+    void *lib = dlopen("./libfsdyn.so", RTLD_LAZY);
+    if (!lib)
+    {
         printf("Ошибка загрузки библиотеки: %s\n", dlerror());
         return 1;
     }
@@ -66,7 +70,8 @@ int main()
     // Получение указателей на функции сортировки
     void (*bubble_sort)(int[], int) = dlsym(lib, "bubble_sort");
     void (*quick_sort)(int[], int, int) = dlsym(lib, "quick_sort");
-    if (!bubble_sort || !quick_sort) {
+    if (!bubble_sort || !quick_sort)
+    {
         printf("Ошибка получения указателей на функции: %s\n", dlerror());
         dlclose(lib);
         return 1;
@@ -82,15 +87,17 @@ int main()
     int mode;
     scanf("%d", &mode);
 
-    if (mode == 1) {
+    if (mode == 1)
+    {
         printf("Введите размер массива: ");
         int size;
         scanf("%d", &size);
 
-        int* arr = (int*)malloc(size * sizeof(int));
+        int *arr = (int *)malloc(size * sizeof(int));
 
         printf("Введите элементы массива:\n");
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++)
+        {
             scanf("%d", &arr[i]);
         }
 
@@ -103,27 +110,33 @@ int main()
         printArray(arr, size);
 
         free(arr);
-    } else if (mode == 2) {
+    }
+    else if (mode == 2)
+    {
         printf("Выберите файл для сортировки:\n");
-        printf("1. Отсортрованный массив по возрастанию.txt\n");
-        printf("2. Отсортрованный массив по убывания.txt\n");
-        printf("3. Отсортрованный массив случайным образом.txt\n");
+        printf("1. sorted_numbers_ascending.txt\n");
+        printf("2. sorted_numbers_descending.txt\n");
+        printf("3. sorted_numbers_random.txt\n");
 
         int fileNum;
         scanf("%d", &fileNum);
 
-        const char* filenames[] = {
+        const char *filenames[] = {
             "sorted_numbers_ascending.txt",
             "sorted_numbers_descending.txt",
-            "sorted_numbers_random.txt"
-        };
+            "sorted_numbers_random.txt"};
 
-        if (fileNum >= 1 && fileNum <= 3) {
+        if (fileNum >= 1 && fileNum <= 3)
+        {
             sortFromFile(filenames[fileNum - 1], quick_sort, SIZE_1);
-        } else {
+        }
+        else
+        {
             printf("Неверный выбор файла.\n");
         }
-    } else {
+    }
+    else
+    {
         printf("Неверный режим.\n");
     }
 
