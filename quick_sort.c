@@ -1,4 +1,4 @@
-void quick_sort(int *s_arr, int low, int high, int jopa)
+void quick_sort(int *s_arr, int low, int high, int teg)
 {
     if (low < high)
     {
@@ -16,7 +16,7 @@ void quick_sort(int *s_arr, int low, int high, int jopa)
                 right--;
             }
         } while (left <= right);
-        quick_sort(s_arr, low, right, jopa);
-        quick_sort(s_arr, left, high, jopa);
+        quick_sort(s_arr, low, right, teg);
+        quick_sort(s_arr, left, high, teg);
     }
 }
