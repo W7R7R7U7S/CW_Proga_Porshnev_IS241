@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include "sort_lib.h"
 
-#define SIZE_1 256
+#define SIZE_1 33024
 #define SIZE_2 33024
 #define STEP 1024
 
