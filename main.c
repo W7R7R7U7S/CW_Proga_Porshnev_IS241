@@ -9,7 +9,6 @@
 #define SIZE_2 33024
 #define STEP 1024
 
-
 double wtime()
 {
     struct timeval t;
@@ -22,14 +21,48 @@ int getrand(int min, int max)
     return (double)rand() / (RAND_MAX + 1.0) * (max - min) + min;
 }
 
-int main() {
+void printArray(int arr[], int size)
+{
+    for (int i = 0; i < size; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+void sortFromFile(const char* filename, void (*sort_func)(int[], int), int size)
+{
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Ошибка открытия файла.\n");
+        return;
+    }
+
+    int* arr = (int*)malloc(size * sizeof(int));
+
+    int i = 0;
+    int num;
+    while (fscanf(file, "%d", &num) == 1 && i < size) {
+        arr[i++] = num;
+    }
+    fclose(file);
+
+    sort_func(arr, size);
+
+    printf("Отсортированный массив:\n");
+    printArray(arr, size);
+
+    free(arr);
+}
+
+int main()
+{
     // Загрузка библиотеки
     void* lib = dlopen("./libfsdyn.so", RTLD_LAZY);
     if (!lib) {
         printf("Ошибка загрузки библиотеки: %s\n", dlerror());
         return 1;
     }
-    
+
     // Получение указателей на функции сортировки
     void (*bubble_sort)(int[], int) = dlsym(lib, "bubble_sort");
     void (*quick_sort)(int[], int, int) = dlsym(lib, "quick_sort");
@@ -38,36 +71,60 @@ int main() {
         dlclose(lib);
         return 1;
     }
-    
+
     // Инициализация генератора случайных чисел
     srand(time(NULL));
-    
-    printf("Count\t      Bubble Sort    Quick Sort\n");
 
-    for (int i = SIZE_1; i <= SIZE_2; i += STEP) {
-        int* arr = (int*)malloc(i * sizeof(int));
+    printf("Выберите режим:\n");
+    printf("1. Ввод с клавиатуры\n");
+    printf("2. Сортировка файла\n");
 
-        if (i == 33024){i = 32768;}
-        printf("%d\t", i);
-        for (int j = 0; j < i; j++) {
-            arr[j] = getrand(28, 215);
+    int mode;
+    scanf("%d", &mode);
+
+    if (mode == 1) {
+        printf("Введите размер массива: ");
+        int size;
+        scanf("%d", &size);
+
+        int* arr = (int*)malloc(size * sizeof(int));
+
+        printf("Введите элементы массива:\n");
+        for (int i = 0; i < size; i++) {
+            scanf("%d", &arr[i]);
         }
 
-        double start, end;
+        printf("Исходный массив:\n");
+        printArray(arr, size);
 
-        start = wtime();
-        bubble_sort(arr, i);
-        end = wtime() - start;
-        printf("%15.7lf", end);
+        bubble_sort(arr, size);
 
-        start = wtime();
-        quick_sort(arr, 0, i - 1);
-        end = wtime() - start;
-        printf("%15.7lf", end);
-
-        printf("\n");
+        printf("Отсортированный массив:\n");
+        printArray(arr, size);
 
         free(arr);
+    } else if (mode == 2) {
+        printf("Выберите файл для сортировки:\n");
+        printf("1. Отсортрованный массив по возрастанию.txt\n");
+        printf("2. Отсортрованный массив по убывания.txt\n");
+        printf("3. Отсортрованный массив случайным образом.txt\n");
+
+        int fileNum;
+        scanf("%d", &fileNum);
+
+        const char* filenames[] = {
+            "sorted_numbers_ascending.txt",
+            "sorted_numbers_descending.txt",
+            "sorted_numbers_random.txt"
+        };
+
+        if (fileNum >= 1 && fileNum <= 3) {
+            sortFromFile(filenames[fileNum - 1], quick_sort, SIZE_1);
+        } else {
+            printf("Неверный выбор файла.\n");
+        }
+    } else {
+        printf("Неверный режим.\n");
     }
 
     // Выгрузка библиотеки
