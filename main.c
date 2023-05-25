@@ -29,7 +29,7 @@ void printArray(int arr[], int size)
     printf("\n");
 }
 
-void sortFromFile(const char* filename, void (*sort_func)(int[], int), int size)
+void sortFromFile(const char* filename, void (*sort_func)(int[], int, int), int size)
 {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
@@ -46,7 +46,7 @@ void sortFromFile(const char* filename, void (*sort_func)(int[], int), int size)
     }
     fclose(file);
 
-    sort_func(arr, size);
+    sort_func(arr, 0, size - 1);
 
     printf("Отсортированный массив:\n");
     printArray(arr, size);
