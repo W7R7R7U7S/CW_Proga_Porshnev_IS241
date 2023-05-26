@@ -3,10 +3,10 @@
 #include <dlfcn.h>
 #include <time.h>
 #include <sys/time.h>
+#include <string.h>
 #include "sort_lib.h"
 
-#define SIZE_1 33024
-#define SIZE_2 33024
+#define SIZE_1 32768
 #define STEP 1024
 
 double wtime()
@@ -14,11 +14,6 @@ double wtime()
     struct timeval t;
     gettimeofday(&t, NULL);
     return (double)t.tv_sec + (double)t.tv_usec * 1E-6;
-}
-
-int getrand(int min, int max)
-{
-    return (double)rand() / (RAND_MAX + 1.0) * (max - min) + min;
 }
 
 void printArray(int arr[], int size)
@@ -30,7 +25,7 @@ void printArray(int arr[], int size)
     printf("\n");
 }
 
-void sortFromFile(const char *filename, void (*sort_func)(int[], int, int), int size)
+void sortFromFile(const char *filename, void (**sort_func)(int[], int, int, int), int size, int step)
 {
     FILE *file = fopen(filename, "r");
     if (file == NULL)
@@ -49,10 +44,38 @@ void sortFromFile(const char *filename, void (*sort_func)(int[], int, int), int 
     }
     fclose(file);
 
-    sort_func(arr, 0, size - 1);
+    printf("Count     Quick          Bubble\n");
+    for (int currSize = 256; currSize <= size; currSize += step)
+    {
+        double start_time, end_time;
+        double sort_times[2];
 
-    printf("Отсортированный массив:\n");
-    printArray(arr, size);
+        // Создаем копии массива для каждой сортировки
+        int *arr_bubble = (int *)malloc(currSize * sizeof(int));
+        int *arr_quick = (int *)malloc(currSize * sizeof(int));
+
+        // Копируем исходный массив в копии
+        memcpy(arr_bubble, arr, currSize * sizeof(int));
+        memcpy(arr_quick, arr, currSize * sizeof(int));
+
+        // Сортировка пузырьком
+        start_time = wtime();
+        (*sort_func[0])(arr_bubble, 0, currSize - 1, 0);
+        end_time = wtime();
+        sort_times[0] = end_time - start_time;
+
+        // Сортировка быстрая
+        start_time = wtime();
+        (*sort_func[1])(arr_quick, currSize, 0, currSize - 1);
+        end_time = wtime();
+        sort_times[1] = end_time - start_time;
+
+        printf("%d\t%.6f\t%.6f\n", currSize, sort_times[0], sort_times[1]);
+
+        // Освобождаем память
+        free(arr_bubble);
+        free(arr_quick);
+    }
 
     free(arr);
 }
@@ -68,17 +91,14 @@ int main()
     }
 
     // Получение указателей на функции сортировки
-    void (*bubble_sort)(int[], int) = dlsym(lib, "bubble_sort");
-    void (*quick_sort)(int[], int, int) = dlsym(lib, "quick_sort");
+    void (*bubble_sort)(int[], int, int, int) = dlsym(lib, "bubble_sort");
+    void (*quick_sort)(int[], int, int, int) = dlsym(lib, "quick_sort");
     if (!bubble_sort || !quick_sort)
     {
         printf("Ошибка получения указателей на функции: %s\n", dlerror());
         dlclose(lib);
         return 1;
     }
-
-    // Инициализация генератора случайных чисел
-    srand(time(NULL));
 
     printf("Выберите режим:\n");
     printf("1. Ввод с клавиатуры\n");
@@ -93,26 +113,33 @@ int main()
         int size;
         scanf("%d", &size);
 
-        int *arr = (int *)malloc(size * sizeof(int));
+        int *arr_bubble = (int *)malloc(size * sizeof(int));
+        int *arr_quick = (int *)malloc(size * sizeof(int));
 
         printf("Введите элементы массива:\n");
         for (int i = 0; i < size; i++)
         {
-            scanf("%d", &arr[i]);
+            scanf("%d", &arr_bubble[i]);
+            arr_quick[i] = arr_bubble[i];
         }
 
         printf("Исходный массив:\n");
-        printArray(arr, size);
+        printArray(arr_bubble, size);
 
-        bubble_sort(arr, size);
+        printf("Сортировка пузырьком:\n");
+        bubble_sort(arr_bubble, size, size, 0);
+        printArray(arr_bubble, size);
 
-        printf("Отсортированный массив:\n");
-        printArray(arr, size);
+        printf("Сортировка быстрая:\n");
+        quick_sort(arr_quick, 0, size - 1, 0);
+        printArray(arr_quick, size);
 
-        free(arr);
+        free(arr_bubble);
+        free(arr_quick);
     }
     else if (mode == 2)
     {
+        // Режим ввода из файла
         printf("Выберите файл для сортировки:\n");
         printf("1. sorted_numbers_ascending.txt\n");
         printf("2. sorted_numbers_descending.txt\n");
@@ -128,7 +155,8 @@ int main()
 
         if (fileNum >= 1 && fileNum <= 3)
         {
-            sortFromFile(filenames[fileNum - 1], quick_sort, SIZE_1);
+            void (*sort_funcs[2])(int[], int, int, int) = {quick_sort, bubble_sort};
+            sortFromFile(filenames[fileNum - 1], sort_funcs, SIZE_1, STEP);
         }
         else
         {

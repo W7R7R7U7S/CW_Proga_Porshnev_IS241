@@ -5,7 +5,7 @@ all:	./app
 	gcc -fPIC -c quick_sort.c
 	gcc -shared -o libfsdyn.so bubble_sort.o quick_sort.o
 	gcc -c main.c
-	gcc main.o -L. -lfsdyn -o resultdyn
+	gcc -g -O0 main.o -L. -lfsdyn -o resultdyn
 
 run:	
 	./resultdyn

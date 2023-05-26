@@ -1,25 +1,22 @@
-#include <stdio.h>
-void swap(int *a, int *b) {
-  int temp = *a;
-  *a = *b;
-  *b = temp;
-}
-int partition(int arr[], int low, int high) {
-  int pivot = arr[high];
-  int i = (low - 1);
-  for (int j = low; j <= high - 1; j++) {
-    if (arr[j] < pivot) {
-      i++;
-      swap(&arr[i], &arr[j]);
+void quick_sort(int *s_arr, int low, int high, int jopa)
+{
+    if (low < high)
+    {
+        int left = low, right = high, middle = s_arr[(left + right) / 2];
+        do
+        {
+            while (s_arr[left] < middle) left++;
+            while (s_arr[right] > middle) right--;
+            if (left <= right)
+            {
+                int tmp = s_arr[left];
+                s_arr[left] = s_arr[right];
+                s_arr[right] = tmp;
+                left++;
+                right--;
+            }
+        } while (left <= right);
+        quick_sort(s_arr, low, right, jopa);
+        quick_sort(s_arr, left, high, jopa);
     }
-  }
-  swap(&arr[i + 1], &arr[high]);
-  return (i + 1);
-}
-void quick_sort(int arr[], int low, int high) {
-  if (low < high) {
-    int pi = partition(arr, low, high);
-    quick_sort(arr, low, pi - 1);
-    quick_sort(arr, pi + 1, high);
-  }
 }
